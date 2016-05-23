@@ -2,11 +2,12 @@ import os, sys
 import httplib, urllib
 import json
 
-FILES = ["educationIDs.txt", "ironyIDs.txt", "newspaperIDs.txt", "politicsIDs.txt", "humourIDs.txt", "sarcasmIDs.txt"]
+FILES = ["educationIDs.txt"] #, "ironyIDs.txt", "newspaperIDs.txt", "politicsIDs.txt", "humourIDs.txt", "sarcasmIDs.txt"]
 
 def loadData(data, outfile):
 	for datum in data:
 		json.dump(datum, outfile)
+		outfile.write('\n')
 
 def fetchTweets(infile, outfile, conn):
 	l = list()
@@ -38,8 +39,6 @@ def main():
 		with open(infile.split('IDs')[0] + "Tweets.json", 'w') as outfile:
 			fetchTweets(infile, outfile, conn)
 			print "finished" + infile + "!"
-
-
 
 if __name__ == "__main__":
 	main()
