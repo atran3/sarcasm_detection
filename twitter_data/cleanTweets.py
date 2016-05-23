@@ -27,7 +27,7 @@ def cleanText(text, entities, category):
 
 def cleanJSON(infile, outfile, conn, category):
 	with open(infile, 'r') as inf:
-		counter = 0
+		# counter = 0
 		for line in inf:
 			tweet = json.loads(line)
 			text = tweet.get('text', '')
@@ -53,8 +53,8 @@ def cleanJSON(infile, outfile, conn, category):
 			data = [text, time, reply_text, reply_time]
 			try:
 				outfile.write('\x1F'.join(map(str, data)) + '\x1E')
-				counter += 1
-				print "successfully written" + str(counter) + "tweets!!"
+				# counter += 1
+				# print "successfully written" + str(counter) + "tweets!!"
 			except:
 				continue
 
@@ -73,7 +73,7 @@ def main():
 		category = infile.split('Tweets')[0]
 		with open(category + "CleanData.csv", 'w') as outfile:
 			cleanJSON(infile, outfile, conn, category)
-			print "finished" + infile + "!"
+			# print "finished" + infile + "!"
 
 if __name__ == "__main__":
 	main()
