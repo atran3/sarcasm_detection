@@ -10,17 +10,17 @@ def loadData(data, outfile):
 
 def fetchTweets(infile, outfile, conn):
 	l = list()
-	counter = 0
+	# counter = 0
 	with open(infile, 'r') as inf:
 		for line in inf:		
 			if len(l) < 100:
 				l.append(line.strip())
 			if len(l) == 100:
-				counter += 100
+				# counter += 100
 				j = ",".join(l)
 				data = json.loads(makeRequest(conn, urllib.urlencode({"id": ",".join(l)})))
 				loadData(data, outfile)
-				print "successfully loaded" + str(counter) + "lines!"
+				# print "successfully loaded" + str(counter) + "lines!"
 				l = [line]
 
 def makeRequest(conn, params):
@@ -30,7 +30,6 @@ def makeRequest(conn, params):
 	response = conn.getresponse()
 	data = response.read()
 	return data
-
 
 def main():
 	conn = httplib.HTTPSConnection("api.twitter.com")
