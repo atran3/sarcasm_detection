@@ -51,9 +51,9 @@ def kfolds(input, output, classifier, verbose=False, num_folds=10):
 
         accuracies.append(accuracy)
 
-        p_overall.append(sum(p)/float(len(p)))
-        r_overall.append(sum(r)/float(len(r)))
-        f1_overall.append(sum(f1)/float(len(f1)))
+        p_overall.append((p[0]*s[0]+p[1]*s[1])/float(s[0]+s[1]))
+        r_overall.append((r[0]*s[0]+r[1]*s[1])/float(s[0]+s[1]))
+        f1_overall.append((f1[0]*s[0]+f1[1]*s[1])/float(s[0]+s[1]))
 
         #NOTE: Gathering neutral and sarcastic stats like this does not work
         #      if one of them is absent in the test set
