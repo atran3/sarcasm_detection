@@ -1,5 +1,7 @@
 import classifiers, argparse, itertools, sys, random
-from sklearn.metrics import classification_report, precision_recall_fscore_support
+from sklearn.metrics import classification_report, precision_recall_fscore_support, accuracy_score
+from data import get
+from random import shuffle
 
 def kfolds(input, output, classifier, verbose=False, num_folds=10):
     if num_folds < 2:
@@ -108,9 +110,14 @@ def main():
     args = parser.parse_args()
 
     # TODO: read_files
-    input = ["ga", "fas", "Asdf", "asdf"]
-    output = [1, 0, 1, 0]
-
+    sarcasm = get("sarcasm")
+    neutral = get("education") + get("newspaper") + get("politics")
+    input = sarcasm + neutral
+    output = ([1] * len(sarcasm) ) + ([0] * len(neutral))
+    index_shuf = range(len(input))
+    shuffle(index_shuf)
+    input_shuf = [input[i] for i in index_shuf]
+    output_shuf = [output[i] for i in index_shuf]
 
     if args.v:
         VERBOSE = True
@@ -123,7 +130,7 @@ def main():
     else:
         raise Exception("Did not recognize the desired classifier.")
 
-    kfolds(input, output, classifier, True, args.f)
+    kfolds(input_shuf, output_shuf, classifier, True, args.f)
 
 if __name__ == "__main__":
     main()
