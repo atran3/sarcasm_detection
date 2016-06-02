@@ -1,10 +1,59 @@
 from sklearn.linear_model import LogisticRegression
 from sklearn.feature_extraction import DictVectorizer
+from nltk.corpus import wordnet as wn
+import re
 
 def baseline_phi(text1, time1, text2, time2):
 	feats = {}
+
+	#laugh words
+	num_laugh_words = len(re.findall(r'lol|haha|hahaha|rofl|lmao', text1))
+	# num_emoticons = len(re.findall(r'\:\)|\:\(|\;\)|\:D', text1))
+
+	#capitalization
+	num_capital_words = 0
+	num_all_caps = 0
+
+	#punctuation
+	num_ellipsis = len(re.findall(r'\.\.\.', text1))
+	num_exclamation_points = len([1 for ch in text1 if ch == '!'])
+	num_punctuation_marks = len([1 for ch in text1 if ch in ['!', ',', '.', '?', '"', ';', '-']])
+
+	#word structure
+	num_words = len(text1.split(' '))
+	mean_word_length = 0
+	mean_synsets = 0
+	max_synset = 0
+
 	for string in text1.split(' '):
+		len_synset = len(wn.synsets(string))
+		if len_synset > max_synset: max_synset = len_synset
+		mean_synsets += len_synset
+		mean_word_length += len(string)
+		if len(string) > 0 and string[0].isupper(): num_capital_words += 1
+		if string.isupper(): num_all_caps += 1
+		#bag of words - unclean
 		feats[string] = feats.get(string, 0) + 1
+
+	feats['NUM_CAPITAL_WORDS'] = num_capital_words
+	feats['NUM_ALL_CAPS'] = num_all_caps
+	feats['NUM_EXCLAMATIONS_POINTS'] = num_exclamation_points
+	feats['NUM_PUNCTUATION_MARKS'] = num_punctuation_marks
+	feats['NUM_WORDS'] = num_words
+	feats['MEAN_WORD_LENGTH'] = mean_word_length / float(num_words)
+	feats['NUM_ELLIPSIS'] = num_ellipsis
+	feats['NUM_LAUGH_WORDS'] = num_laugh_words
+	# feats['NUM_EMOTICONS'] = num_emoticons
+	feats['MEAN_SYNSETS'] = mean_synsets / float(num_words)
+	feats['MAX_SYNSET'] = max_synset
+	feats['SYNSET_GAP'] = max_synset - mean_synsets
+
+	#bag of words, reply tweet
+	for string in text2.split(' '):
+		feats[string] = feats.get(string, 0) + 1
+
+
+
 
 	return feats
 
@@ -19,7 +68,7 @@ def binary_class_func(y):
 def build_dataset(data, phi, vectorizer=None):
 	feat_dicts = []
 	raw_examples = []
-	for time1, time2, text1, text2 in data:
+	for text1, time1, text2, time2 in data:
 		feat_dicts.append(phi(text1, time1, text2, time2))
 		raw_examples.append(text1)
 	feat_matrix = None
