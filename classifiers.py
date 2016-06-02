@@ -1,9 +1,17 @@
 from sklearn.linear_model import LogisticRegression
 from sklearn.feature_extraction import DictVectorizer
 from nltk.corpus import wordnet as wn
+from nltk.corpus import sentiwornet as swn
 import re
 
 def baseline_phi(text1, time1, text2, time2):
+	feats = {}
+	for string in text1.split(' '):
+		feats[string] = feats.get(string, 0) + 1
+	
+	return feats
+
+def novel_phi(text1, time1, text2, time2):
 	feats = {}
 
 	#laugh words
@@ -24,6 +32,11 @@ def baseline_phi(text1, time1, text2, time2):
 	mean_word_length = 0
 	mean_synsets = 0
 	max_synset = 0
+
+	#sentiment
+	pos_sum = 0
+	neg_sum = 0
+	mean_pos_neg = 0
 
 	for string in text1.split(' '):
 		len_synset = len(wn.synsets(string))
@@ -50,16 +63,6 @@ def baseline_phi(text1, time1, text2, time2):
 
 	#bag of words, reply tweet
 	for string in text2.split(' '):
-		feats[string] = feats.get(string, 0) + 1
-
-
-
-
-	return feats
-
-def novel_phi(text1, time1, text2, time2):
-	feats = {}
-	for string in text1.split(' '):
 		feats[string] = feats.get(string, 0) + 1
 
 	return feats
@@ -110,7 +113,7 @@ class Novel():
 		self.mod = LogisticRegression(fit_intercept = True)
 
 	def train(self, X, Y):
-		dataset = build_dataset(X, baseline_phi)
+		dataset = build_dataset(X, novel_phi)
 		self.mod.fit(dataset['X'], Y)
 		self.vectorizer = dataset['vectorizer']
 
