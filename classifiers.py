@@ -110,6 +110,19 @@ def build_dataset(data, phi, vectorizer=None):
 			'vectorizer': vectorizer, 
 			'raw_examples': raw_examples}
 
+def print_weights(self):
+	weights = list(self.mod.coef_[0])
+	fm =  self.vectorizer.inverse_transform(weights)[0]
+	fm = sorted(fm.iteritems(), key= lambda x: x[1], reverse=True)
+	print "Feature weights:"
+	for k,v in fm[:10]:
+		print "\t%s\t%f" % (k,v)
+	print "\t."
+	print "\t."
+	print "\t."
+	for k,v in fm[-10:]:
+		print "\t%s\t%f" % (k,v)
+
 
 # Logistic Regression on bag of words
 class Baseline():
@@ -125,18 +138,9 @@ class Baseline():
 		dataset = build_dataset(X, baseline_phi, vectorizer=self.vectorizer)
 		return self.mod.predict(dataset['X'])
 
-	def print_weights(self):
-		weights = list(self.mod.coef_[0])
-		fm =  self.vectorizer.inverse_transform(weights)[0]
-		fm = sorted(fm.iteritems(), key= lambda x: x[1], reverse=True)
-		print "Feature weights:"
-		for k,v in fm[:10]:
-			print "\t%s\t%f" % (k,v)
-		print "\t."
-		print "\t."
-		print "\t."
-		for k,v in fm[-10:]:
-			print "\t%s\t%f" % (k,v)
+	print_weights = print_weights
+
+
 
 class Novel():
 	def __init__(self):
@@ -151,16 +155,6 @@ class Novel():
 		dataset = build_dataset(X, novel_phi, vectorizer=self.vectorizer)
 		return self.mod.predict(dataset['X'])
 
-	def print_weights(self):
-		weights = list(self.mod.coef_[0])
-		fm =  self.vectorizer.inverse_transform(weights)[0]
-		fm = sorted(fm.iteritems(), key= lambda x: x[1], reverse=True)
-		print "Feature weights:"
-		for k,v in fm[:10]:
-			print "\t%s\t%f" % (k,v)
-		print "\t."
-		print "\t."
-		print "\t."
-		for k,v in fm[-10:]:
-			print "\t%s\t%f" % (k,v)
+	print_weights = print_weights
+
 
