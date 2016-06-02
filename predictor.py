@@ -3,6 +3,27 @@ from sklearn.metrics import classification_report, precision_recall_fscore_suppo
 from data import get
 from random import shuffle
 
+def sample_errors(input, gold, predicted, num_errors):
+    numLeft = num_errors
+    for i in xrange(len(input)):
+        if predicted[i] != gold[i]:
+            print "="*40
+            print "Tweet #1:", input[i][0]
+            print "Time #1:", input[i][1]
+            print "Tweet #2:", input[i][2]
+            print "Time #2:", input[i][3]
+            print ""
+            print "Predicted:", ("Sarcastic" if predicted[i] == 1 else "Neutral")
+            print "Actual:", ("Sarcastic" if gold[i] == 1 else  "Neutral")
+            print ""
+
+            numLeft -= 1
+
+
+        if numLeft == 0:
+            break
+
+
 def kfolds(input, output, classifier, verbose=False, num_folds=10):
     if num_folds < 2:
         num_folds = 2
@@ -77,6 +98,12 @@ def kfolds(input, output, classifier, verbose=False, num_folds=10):
             print('Accuracy: %0.03f' % accuracy)
             print(classification_report(testY, testPredY, target_names=target_names, digits=3))
     
+    classifier.print_weights()
+    # Print sample errors
+    predY = classifier.predict(input)
+    sample_errors(input, output, predY, 3)
+
+
     if verbose:
         print "-------------------END TESTING--------------------"
         print ""
@@ -85,7 +112,7 @@ def kfolds(input, output, classifier, verbose=False, num_folds=10):
         print "Accuracy: %0.03f" % (sum(accuracies)/float(len(accuracies)))
         print "{0:12s} {1:12s} {2:7s} {3:12s}".format("", "precision", "recall", "f1-score")
         print ""
-        fmt = "{0:12s} {1:9.2f} {2:9.2f} {3:9.2f}"
+        fmt = "{0:12s} {1:9.3f} {2:9.3f} {3:9.3f}"
         print fmt.format("neutral",
                         sum(p_neutral)/float(len(p_neutral)),
                         sum(r_neutral)/float(len(r_neutral)),
@@ -109,7 +136,6 @@ def main():
     parser.add_argument("-f", action="store", help="how many folds to use", type=int, default=10)
     args = parser.parse_args()
 
-    # TODO: read_files
     sarcasm = get("sarcasm")
     neutral = get("education") + get("newspaper") + get("politics")
     input = sarcasm + neutral
@@ -123,10 +149,12 @@ def main():
         VERBOSE = True
 
     if args.c is None:
-        print "Defaulting to Baseline..."
-        classifier = classifiers.Baseline()        
+        print "Defaulting to Novel..."
+        classifier = classifiers.Novel()
     elif args.c == "Baseline":
         classifier = classifiers.Baseline()
+    elif args.c == "Novel":
+        classifier = classifiers.Novel()
     else:
         raise Exception("Did not recognize the desired classifier.")
 
