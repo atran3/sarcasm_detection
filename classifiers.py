@@ -1,7 +1,7 @@
 from sklearn.linear_model import LogisticRegression
 from sklearn.feature_extraction import DictVectorizer
 from nltk.corpus import wordnet as wn
-from nltk.corpus import sentiwornet as swn
+from nltk.corpus import sentiwordnet as swn
 import re
 
 def baseline_phi(text1, time1, text2, time2):
@@ -36,9 +36,20 @@ def novel_phi(text1, time1, text2, time2):
 	#sentiment
 	pos_sum = 0
 	neg_sum = 0
-	mean_pos_neg = 0
+	most_positive = 0
+	most_negative = 0
 
 	for string in text1.split(' '):
+		senti_synset = list(swn.senti_synsets(string))
+		if len(senti_synset) > 0:
+			senti_synset = senti_synset[0] #just use the 1st one for now
+			pos_score = senti_synset.pos_score()
+			if pos_score > most_positive: most_positive = pos_score
+			pos_sum += pos_score
+			neg_score = senti_synset.neg_score()
+			if neg_score > most_negative: most_negative = neg_score
+			neg_sum += neg_score	
+
 		len_synset = len(wn.synsets(string))
 		if len_synset > max_synset: max_synset = len_synset
 		mean_synsets += len_synset
@@ -60,6 +71,12 @@ def novel_phi(text1, time1, text2, time2):
 	feats['MEAN_SYNSETS'] = mean_synsets / float(num_words)
 	feats['MAX_SYNSET'] = max_synset
 	feats['SYNSET_GAP'] = max_synset - mean_synsets
+	feats['POS_SUM'] = pos_sum
+	feats['NEG_SUM'] = neg_sum
+	feats['MEAN_POS_NEG'] = (pos_sum + neg_sum) / 2.0
+	feats['POS_NEG_GAP'] = pos_sum - neg_sum
+	feats['SINGLE_POS_GAP'] = most_positive - (pos_sum + neg_sum) / 2.0
+	feats['SINGLE_NEG_GAP'] = most_negative - (pos_sum + neg_sum) / 2.0
 
 	#bag of words, reply tweet
 	for string in text2.split(' '):
