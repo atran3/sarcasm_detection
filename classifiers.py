@@ -1,8 +1,26 @@
 from sklearn.linear_model import LogisticRegression
 from sklearn.feature_extraction import DictVectorizer
 from nltk.corpus import wordnet as wn
-from nltk.corpus import sentiwornet as swn
+from nltk.corpus import sentiwordnet as swn
 import re
+
+def read_trends():
+	f = open("trends_data/trends.txt")
+	trends = {}
+	trend2cat = {}
+	for line in f.readlines():
+		line = line[:-1]
+		date, category, trend = line.split('\t')
+		if date not in trends:
+			trends[date] = []
+ 
+ 		trends[date].append(trend)
+ 		trend2cat[trend] = category
+
+ 	return trends, trend2cat
+
+
+trends, trend2cat = read_trends()
 
 def baseline_phi(text1, time1, text2, time2):
 	feats = {}
@@ -38,7 +56,13 @@ def novel_phi(text1, time1, text2, time2):
 	neg_sum = 0
 	mean_pos_neg = 0
 
+	date1 = time1.strftime("%Y%m")
+	hasDate = date1 in trends
 	for string in text1.split(' '):
+		if hasDate and string in trends:
+			cat = 'TRENDS_' + trend2cat[string]
+			feats[cat] = feats.get(cat, 0) + 1
+
 		len_synset = len(wn.synsets(string))
 		if len_synset > max_synset: max_synset = len_synset
 		mean_synsets += len_synset

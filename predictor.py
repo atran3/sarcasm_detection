@@ -3,10 +3,10 @@ from sklearn.metrics import classification_report, precision_recall_fscore_suppo
 from data import get
 from random import shuffle
 
-def sample_errors(input, gold, predicted, num_errors):
+def sample_errors(input, gold, predicted, num_errors, useErrors):
     numLeft = num_errors
     for i in xrange(len(input)):
-        if predicted[i] != gold[i]:
+        if (predicted[i] != gold[i]) == useErrors:
             print "="*40
             print "Tweet #1:", input[i][0]
             print "Time #1:", input[i][1]
@@ -72,6 +72,8 @@ def kfolds(input, output, classifier, verbose=False, num_folds=10):
 
         accuracies.append(accuracy)
 
+        sample_errors(testX, testY, testPredY, 3, False)
+
         p_overall.append((p[0]*s[0]+p[1]*s[1])/float(s[0]+s[1]))
         r_overall.append((r[0]*s[0]+r[1]*s[1])/float(s[0]+s[1]))
         f1_overall.append((f1[0]*s[0]+f1[1]*s[1])/float(s[0]+s[1]))
@@ -101,7 +103,7 @@ def kfolds(input, output, classifier, verbose=False, num_folds=10):
     classifier.print_weights()
     # Print sample errors
     predY = classifier.predict(input)
-    sample_errors(input, output, predY, 3)
+    sample_errors(input, output, predY, 3, True)
 
 
     if verbose:
