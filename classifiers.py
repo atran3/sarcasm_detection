@@ -54,14 +54,26 @@ def novel_phi(text1, time1, text2, time2):
 	#sentiment
 	pos_sum = 0
 	neg_sum = 0
-	mean_pos_neg = 0
+	most_positive = 0
+	most_negative = 0
 
 	date1 = time1.strftime("%Y%m")
 	hasDate = date1 in trends
 	for string in text1.split(' '):
+
 		if hasDate and string in trends:
 			cat = 'TRENDS_' + trend2cat[string]
 			feats[cat] = feats.get(cat, 0) + 1
+
+		senti_synset = list(swn.senti_synsets(string))
+		if len(senti_synset) > 0:
+			senti_synset = senti_synset[0] #just use the 1st one for now
+			pos_score = senti_synset.pos_score()
+			if pos_score > most_positive: most_positive = pos_score
+			pos_sum += pos_score
+			neg_score = senti_synset.neg_score()
+			if neg_score > most_negative: most_negative = neg_score
+			neg_sum += neg_score	
 
 		len_synset = len(wn.synsets(string))
 		if len_synset > max_synset: max_synset = len_synset
@@ -84,6 +96,12 @@ def novel_phi(text1, time1, text2, time2):
 	feats['MEAN_SYNSETS'] = mean_synsets / float(num_words)
 	feats['MAX_SYNSET'] = max_synset
 	feats['SYNSET_GAP'] = max_synset - mean_synsets
+	feats['POS_SUM'] = pos_sum
+	feats['NEG_SUM'] = neg_sum
+	feats['MEAN_POS_NEG'] = (pos_sum + neg_sum) / 2.0
+	feats['POS_NEG_GAP'] = pos_sum - neg_sum
+	feats['SINGLE_POS_GAP'] = most_positive - (pos_sum + neg_sum) / 2.0
+	feats['SINGLE_NEG_GAP'] = most_negative - (pos_sum + neg_sum) / 2.0
 
 	#bag of words, reply tweet
 	for string in text2.split(' '):
@@ -117,6 +135,19 @@ def build_dataset(data, phi, vectorizer=None):
 			'vectorizer': vectorizer, 
 			'raw_examples': raw_examples}
 
+def print_weights(self):
+	weights = list(self.mod.coef_[0])
+	fm =  self.vectorizer.inverse_transform(weights)[0]
+	fm = sorted(fm.iteritems(), key= lambda x: x[1], reverse=True)
+	print "Feature weights:"
+	for k,v in fm[:10]:
+		print "\t%s\t%f" % (k,v)
+	print "\t."
+	print "\t."
+	print "\t."
+	for k,v in fm[-10:]:
+		print "\t%s\t%f" % (k,v)
+
 
 # Logistic Regression on bag of words
 class Baseline():
@@ -132,6 +163,7 @@ class Baseline():
 		dataset = build_dataset(X, baseline_phi, vectorizer=self.vectorizer)
 		return self.mod.predict(dataset['X'])
 
+<<<<<<< HEAD
 	def print_weights(self):
 		weights = list(self.mod.coef_[0])
 		fm =  self.vectorizer.inverse_transform(weights)[0]
@@ -144,6 +176,11 @@ class Baseline():
 		print "\t."
 		for k,v in fm[-10:]:
 			print "\t%s\t%f" % (k,v)
+=======
+	print_weights = print_weights
+
+
+>>>>>>> bdf5050ca3e082b16abdc40b1a228ef11deeb800
 
 class Novel():
 	def __init__(self):
@@ -158,16 +195,6 @@ class Novel():
 		dataset = build_dataset(X, novel_phi, vectorizer=self.vectorizer)
 		return self.mod.predict(dataset['X'])
 
-	def print_weights(self):
-		weights = list(self.mod.coef_[0])
-		fm =  self.vectorizer.inverse_transform(weights)[0]
-		fm = sorted(fm.iteritems(), key= lambda x: x[1], reverse=True)
-		print "Feature weights:"
-		for k,v in fm[:10]:
-			print "\t%s\t%f" % (k,v)
-		print "\t."
-		print "\t."
-		print "\t."
-		for k,v in fm[-10:]:
-			print "\t%s\t%f" % (k,v)
+	print_weights = print_weights
+
 
