@@ -123,7 +123,7 @@ class Novel():
 		self.mod = LogisticRegression(fit_intercept = True)
 
 	def train(self, X, Y):
-		dataset = build_dataset(X, baseline_phi)
+		dataset = build_dataset(X, novel_phi)
 		self.mod.fit(dataset['X'], Y)
 		self.vectorizer = dataset['vectorizer']
 
