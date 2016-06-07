@@ -1,11 +1,36 @@
 from nltk.corpus import wordnet as wn
 from nltk.corpus import sentiwordnet as swn
 from nltk import bigrams
+from nltk import pos_tag, word_tokenize
 import re
 import sys
 import json
 
 FILES = ["educationCleanData.csv", "ironyCleanData.csv", "newspaperCleanData.csv", "politicsCleanData.csv", "humourCleanData.csv", "sarcasmCleanData.csv"]
+
+def getPOSFeatures(feats, text, prefix):
+	num_nouns = 0
+	num_verbs = 0
+	num_adjectives = 0
+	num_adverbs = 0
+	num_words = len(text.split(' '))
+	for _, tag in pos_tag(word_tokenize(text)):
+		if tag in ['RB', 'RBR', 'RBS']: 
+			num_adverbs += 1
+		elif tag in ['NN', 'NNS', 'NNP', 'NNPS', 'PRP', 'PRP$']: 
+			num_nouns += 1
+		elif tag in ['JJ', 'JJR', 'JJS']:
+			num_adjectives += 1
+		elif tag in ['VB', 'VBD', 'VBG', 'VBN', 'VBP', 'VBZ']:
+			num_verbs += 1
+	feats[prefix + 'NUM_NOUNS'] = num_nouns
+	feats[prefix + 'NUM_VERBS'] = num_verbs
+	feats[prefix + 'NUM_ADJECTIVES'] = num_adjectives
+	feats[prefix + 'NUM_ADVERBS'] = num_adverbs
+	feats[prefix + 'NOUN_RATIO'] = num_nouns / num_words
+	feats[prefix + 'VERB_RATIO'] = num_verbs / num_words
+	feats[prefix + 'ADJECTIVE_RATIO'] = num_adjectives / num_words
+	feats[prefix + 'ADVERB_RATIO'] = num_adverbs / num_words
 
 def getNGramFeatures(feats, text, prefix):
 	for string in text.lower().split(' '):
@@ -73,12 +98,13 @@ def getSentimentFeatures(feats, text, prefix):
 
 def getPunctuationFeatures(feats, text, prefix):
 	feats[prefix + 'NUM_EXCLAMATIONS_POINTS'] = len([1 for ch in text if ch == '!'])
-	feats[prefix + 'NUM_PUNCTUATION_MARKS'] = len([1 for ch in text if ch in ['!', ',', '.', '?', '"', ';', '-']])
+	feats[prefix + 'NUM_COMMAS'] = len([1 for ch in text if ch == ','])
+	feats[prefix + 'NUM_QUOTATION_MARKS'] = len([1 for ch in text if ch == '?'])
 	feats[prefix + 'NUM_ELLIPSIS'] = len(re.findall(r'\.\.\.', text))
 	feats[prefix + 'NUM_HASHTAGS'] = len([1 for ch in text if ch == '#'])
 
 def featurize(infile, outfile, category):
-	counter = 0
+	# counter = 0
 	all_features = []
 	with open(infile, 'r') as inf:
 		reader = inf.read().split('\x1E')
@@ -93,6 +119,7 @@ def featurize(infile, outfile, category):
 			getWordFeatures(features, example[0], '')
 			getLaughFeatures(features, example[0], '')
 			getNGramFeatures(features, example[0], '')
+			getPOSFeatures(features, example[0], '')
 			if example[2] != '':
 				features['REPLY_TEXT'] = example[2]
 				features['REPLY_TIME'] = example[3]
@@ -101,9 +128,10 @@ def featurize(infile, outfile, category):
 				getWordFeatures(features, example[2], 'REPLY_')
 				getLaughFeatures(features, example[2], 'REPLY_')
 				getNGramFeatures(features, example[2], 'REPLY_')
+				getPOSFeatures(features, example[2], 'REPLY_')
 			all_features.append(features)
-			counter += 1
-			print "successfully read" + str(counter) + "tweets!!"
+			# counter += 1
+			# print "successfully read" + str(counter) + "tweets!!"
 		json.dump(all_features, outfile)
 
 def main():
@@ -112,7 +140,7 @@ def main():
 		category = infile.split('CleanData')[0]
 		with open(category + "Featurized.csv", 'w') as outfile:
 			featurize(infile, outfile, category)
-			print "finished" + infile + "!"
+			# print "finished" + infile + "!"
 
 if __name__ == "__main__":
     main()
