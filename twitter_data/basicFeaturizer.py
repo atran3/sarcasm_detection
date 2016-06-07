@@ -118,7 +118,7 @@ def featurize(infile, outfile, category):
 			getSentimentFeatures(features, example[0], '')
 			getWordFeatures(features, example[0], '')
 			getLaughFeatures(features, example[0], '')
-			getNGramFeatures(features, example[0], '')
+			# getNGramFeatures(features, example[0], '')
 			getPOSFeatures(features, example[0], '')
 			if example[2] != '':
 				features['REPLY_TEXT'] = example[2]
@@ -127,7 +127,7 @@ def featurize(infile, outfile, category):
 				getSentimentFeatures(features, example[2], 'REPLY_')
 				getWordFeatures(features, example[2], 'REPLY_')
 				getLaughFeatures(features, example[2], 'REPLY_')
-				getNGramFeatures(features, example[2], 'REPLY_')
+				# getNGramFeatures(features, example[2], 'REPLY_')
 				getPOSFeatures(features, example[2], 'REPLY_')
 			all_features.append(features)
 			# counter += 1
