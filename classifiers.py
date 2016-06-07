@@ -1,4 +1,5 @@
 from sklearn.linear_model import LogisticRegression
+from sklearn.svm import SVC
 from sklearn.feature_extraction import DictVectorizer
 from nltk.corpus import wordnet as wn
 from nltk.corpus import sentiwordnet as swn
@@ -54,11 +55,11 @@ def build_dataset(data, phi, vectorizer=None):
 	for basicFeatures in data:
 		raw_examples.append(basicFeatures['TEXT'])
 		features = copy.deepcopy(basicFeatures)
+		features = phi(features)
 		if features.get('TEXT', False): del features['TEXT']
 		if features.get('TEXT_TIME', False): del features['TEXT_TIME']
 		if features.get('REPLY_TEXT', False): del features['REPLY_TEXT']
 		if features.get('REPLY_TIME', False): del features['REPLY_TIME']
-		features = phi(features)
 		feat_dicts.append(features)
 	feat_matrix = None
 	# In training, we want a new vectorizer:    
@@ -88,8 +89,13 @@ def print_weights(self):
 
 # Logistic Regression on bag of words
 class Baseline():
-	def __init__(self):
-		self.mod = LogisticRegression(fit_intercept = True)
+	def __init__(self, model):
+		if model == 'Logistic':
+			self.model = 'Logistic'
+			self.mod = LogisticRegression(fit_intercept = True)
+		else:
+			self.model = 'SVM'
+			self.mod = SVC()
 
 	def train(self, X, Y):
 		dataset = build_dataset(X, baseline_phi)
@@ -104,8 +110,13 @@ class Baseline():
 
 
 class Novel():
-	def __init__(self):
-		self.mod = LogisticRegression(fit_intercept = True)
+	def __init__(self, model):
+		if model == 'Logistic':
+			self.model = 'Logistic'
+			self.mod = LogisticRegression(fit_intercept = True)
+		else:
+			self.model = 'SVM'
+			self.mod = SVC()
 
 	def train(self, X, Y):
 		dataset = build_dataset(X, novel_phi)

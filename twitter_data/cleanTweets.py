@@ -42,6 +42,7 @@ def cleanJSON(infile, outfile, conn, category):
 			text = tweet.get('text', '')
 			entities = tweet.get('entities', {})
 			text = cleanText(text, entities, category)
+			if len(text.split(' ')) < 3: continue
 			created_at = tweet.get('created_at', None)
 			time = ''
 			if created_at is not None:

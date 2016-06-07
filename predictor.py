@@ -100,7 +100,8 @@ def kfolds(input, output, classifier, verbose=False, num_folds=10):
             print('Accuracy: %0.03f' % accuracy)
             print(classification_report(testY, testPredY, target_names=target_names, digits=3))
     
-    classifier.print_weights()
+    if classifier.model != 'SVM':
+        classifier.print_weights()
     # Print sample errors
     predY = classifier.predict(input)
     sample_errors(input, output, predY, 3, True)
@@ -134,6 +135,7 @@ def main():
     global VERBOSE, NUM_PROB
     parser = argparse.ArgumentParser(description='Runs a sarcasm classifier on tweets.')
     parser.add_argument("-c", action="store", help="which classifier to use", type=str, default=None)
+    parser.add_argument("-m", action="store", help="which model to use", type=str, default=None)
     parser.add_argument("-v", action="store_true", help="verbose output", default=False)
     parser.add_argument("-f", action="store", help="how many folds to use", type=int, default=10)
     args = parser.parse_args()
@@ -150,13 +152,17 @@ def main():
     if args.v:
         VERBOSE = True
 
+    model = 'Logistic'
+    if args.m == 'SVM':
+        model = 'SVM'
+
     if args.c is None:
-        print "Defaulting to Novel..."
-        classifier = classifiers.Novel()
+        print "Defaulting to Novel with " + model + "..."
+        classifier = classifiers.Novel(model)
     elif args.c == "Baseline":
-        classifier = classifiers.Baseline()
+        classifier = classifiers.Baseline(model)
     elif args.c == "Novel":
-        classifier = classifiers.Novel()
+        classifier = classifiers.Novel(model)
     else:
         raise Exception("Did not recognize the desired classifier.")
 
