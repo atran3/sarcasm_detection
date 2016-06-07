@@ -97,7 +97,7 @@ def print_weights(self):
 	for k,v in fm[-10:]:
 		print "\t%s\t%f" % (k,v)
 
-	trendFeats = [("%s: %d" % (key, features[key])) for key in fm if "TRENDS_" in key]
+	trendFeats = [("%s: %f" % (key, value)) for key, value in fm if "TRENDS_" in key]
 	print trendFeats
 
 
@@ -118,7 +118,8 @@ class Baseline():
 
 	def predict(self, X):
 		dataset = build_dataset(X, baseline_phi, vectorizer=self.vectorizer)
-		return self.mod.predict(dataset['X'])
+		results = self.mod.predict_proba(dataset['X'])
+		return [1 if (results[i][1] >= 0.3) else 0 for i in xrange(len(results))]
 
 	print_weights = print_weights
 
@@ -139,7 +140,8 @@ class Novel():
 
 	def predict(self, X):
 		dataset = build_dataset(X, novel_phi, vectorizer=self.vectorizer)
-		return self.mod.predict(dataset['X'])
+		results = self.mod.predict_proba(dataset['X'])
+		return [1 if (results[i][1] >= 0.5) else 0 for i in xrange(len(results))]
 
 	print_weights = print_weights
 
