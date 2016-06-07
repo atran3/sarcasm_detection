@@ -1,6 +1,6 @@
 import classifiers, argparse, itertools, sys, random
 from sklearn.metrics import classification_report, precision_recall_fscore_support, accuracy_score
-from data import get
+import data
 from random import shuffle
 
 def sample_errors(input, gold, predicted, num_errors, useErrors):
@@ -8,10 +8,10 @@ def sample_errors(input, gold, predicted, num_errors, useErrors):
     for i in xrange(len(input)):
         if (predicted[i] != gold[i]) == useErrors:
             print "="*40
-            print "Tweet #1:", input[i][0]
-            print "Time #1:", input[i][1]
-            print "Tweet #2:", input[i][2]
-            print "Time #2:", input[i][3]
+            print "Tweet #1:", input[i].get('TEXT', '')
+            print "Time #1:", input[i].get('TEXT_TIME', '')
+            print "Tweet #2:", input[i].get('REPLY_TEXT', '')
+            print "Time #2:", input[i].get('REPLY_TIME', '')
             print ""
             print "Predicted:", ("Sarcastic" if predicted[i] == 1 else "Neutral")
             print "Actual:", ("Sarcastic" if gold[i] == 1 else  "Neutral")
@@ -138,8 +138,8 @@ def main():
     parser.add_argument("-f", action="store", help="how many folds to use", type=int, default=10)
     args = parser.parse_args()
 
-    sarcasm = get("sarcasm")
-    neutral = get("education") + get("newspaper") + get("politics")
+    sarcasm = data.get("sarcasm")
+    neutral = data.get("education") + data.get("newspaper") + data.get("politics")
     input = sarcasm + neutral
     output = ([1] * len(sarcasm) ) + ([0] * len(neutral))
     index_shuf = range(len(input))

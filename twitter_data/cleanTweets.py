@@ -3,6 +3,7 @@ import httplib, urllib
 import json
 import pytz
 from datetime import datetime
+from stemming.porter2 import stem
 
 FILES = ["educationTweets.json", "ironyTweets.json", "newspaperTweets.json", "politicsTweets.json", "humourTweets.json", "sarcasmTweets.json"]
 
@@ -23,6 +24,14 @@ def cleanText(text, entities, category):
 	ranges = sorted(ranges, key=lambda x: x[0], reverse=True)
 	for r in ranges:
 		cleanText = cleanText[:r[0]] + cleanText[r[1] + 1:]
+
+	category_stem = stem(category).lower()
+	cleanTextList = cleanText.split(' ')
+	cleanText = []
+	for word in cleanTextList:
+		if category_stem not in stem(word).lower() and stem(word).lower() not in category_stem:
+			cleanText.append(word)
+	cleanText = " ".join(cleanText)
 	return cleanText
 
 def cleanJSON(infile, outfile, conn, category):

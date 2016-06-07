@@ -1,17 +1,15 @@
-from os import path
 from datetime import datetime
+import json
 
 def get(category):
 	data = []
-	with open("twitter_data/" + category + "CleanData.csv", 'r') as f:
-		reader = f.read().split('\x1E')
-		for example in reader:
-			example = example.split('\x1F')
-			if len(example) <= 1: continue
-			if example[1] != '':
-				example[1] = datetime.strptime(example[1][:-6], "%Y-%m-%d %H:%M:%S")
-			if example[3] != '':
-				example[3] = datetime.strptime(example[3][:-6], "%Y-%m-%d %H:%M:%S")
-			data.append(example)
+	with open("twitter_data/" + category + "Featurized.csv", 'r') as f:
+		all_features = json.load(f)
+		for features in all_features:
+			if features.get('TEXT_TIME', False):
+				features['TEXT_TIME'] = datetime.strptime(features['TEXT_TIME'][:-6], "%Y-%m-%d %H:%M:%S")
+			if features.get('REPLY_TIME', False):
+				features['REPLY_TIME'] = datetime.strptime(features['REPLY_TIME'][:-6], "%Y-%m-%d %H:%M:%S")
+			data.append(features)
 		return data
 
