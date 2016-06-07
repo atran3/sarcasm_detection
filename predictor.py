@@ -24,7 +24,7 @@ def sample_errors(input, gold, predicted, num_errors, useErrors):
             break
 
 
-def kfolds(input, output, classifier, verbose=False, num_folds=10):
+def kfolds(input, output, classifier, verbose=False, num_folds=10, threshold=0.5):
     if num_folds < 2:
         num_folds = 2
         print "Defaulting to 2-folds at minimum..."
@@ -62,8 +62,8 @@ def kfolds(input, output, classifier, verbose=False, num_folds=10):
 
         classifier.train(trainX, trainY)
 
-        trainPredY = classifier.predict(trainX)
-        testPredY = classifier.predict(testX)
+        trainPredY = classifier.predict(trainX, threshold)
+        testPredY = classifier.predict(testX, threshold)
         accuracy = accuracy_score(testY, testPredY)
         p, r, f1, s = precision_recall_fscore_support(testY, testPredY,
                                                   labels=None,
@@ -103,7 +103,7 @@ def kfolds(input, output, classifier, verbose=False, num_folds=10):
     if classifier.model != 'SVM':
         classifier.print_weights()
     # Print sample errors
-    predY = classifier.predict(input)
+    predY = classifier.predict(input, threshold)
     sample_errors(input, output, predY, 3, True)
 
 
@@ -138,6 +138,7 @@ def main():
     parser.add_argument("-m", action="store", help="which model to use", type=str, default=None)
     parser.add_argument("-v", action="store_true", help="verbose output", default=False)
     parser.add_argument("-f", action="store", help="how many folds to use", type=int, default=10)
+    parser.add_argument("-t", action="store", help="classification threshold", type=float, default=0.5)
     args = parser.parse_args()
 
     sarcasm = data.get("sarcasm")
@@ -166,7 +167,7 @@ def main():
     else:
         raise Exception("Did not recognize the desired classifier.")
 
-    kfolds(input_shuf, output_shuf, classifier, True, args.f)
+    kfolds(input_shuf, output_shuf, classifier, True, args.f, args.t)
 
 if __name__ == "__main__":
     main()

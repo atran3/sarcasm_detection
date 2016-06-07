@@ -25,13 +25,36 @@ def read_trends():
 
 trends, trend2cat = read_trends()
 
+
+baseline_features = ["NUM_WORDS", "MEAN_WORD_LENGTH", "MIN_WORD_LENGTH", "MAX_WORD_LENGTH",
+"NUM_EXCLAMATIONS_POINTS",'NUM_COMMAS','NUM_QUOTATION_MARKS','NUM_ELLIPSIS','NUM_HASHTAGS',
+'MEAN_SYNSETS','MAX_SYNSET','SYNSET_GAP', "TEXT", "TEXT_TIME"]
+pos_features = ["NUM_NOUNS", "NUM_VERBS", "NUM_ADJECTIVES", "NUM_ADVERBS",
+"NOUN_RATIO", "VERB_RATIO", "ADJECTIVE_RATIO", "ADVERB_RATIO"]
+laugh_features = ["NUM_LAUGH_WORDS", "NUM_EMOTICONS"]
+sent_features = ["POS_SUM","NEG_SUM","MEAN_POS_NEG", "POS_NEG_GAP",
+"SINGLE_POS_GAP", "SINGLE_NEG_GAP"]
+reply_features = [("REPLY_" + key) for key in (baseline_features + pos_features + laugh_features + sent_features)]
 def baseline_phi(features):
-	feats = {}
-	for string in features['TEXT'].split(' '):
-		feats[string] = feats.get(string, 0) + 1
-	return feats
+	to_delete = []
+	for key in features:
+		if key not in baseline_features:
+			to_delete.append(key)
+
+	for key in to_delete:
+		del features[key]
+
+	return features
 
 def novel_phi(features):
+	# keep = baseline_features + sent_features + laugh_features + pos_features + reply_features
+	# to_delete = []
+	# for key in features:
+	# 	if key not in keep:
+	# 		to_delete.append(key)
+	# for key in to_delete:
+	# 	del features[key]
+
 	date1 = features['TEXT_TIME'].strftime("%Y%m")
 	hasDate = date1 in trends
 		# if hasDate and string in trends[date1]:
@@ -44,6 +67,7 @@ def novel_phi(features):
 				#print trend
 				cat = 'TRENDS_' + trend2cat[trend]
 				features[cat] = features.get(cat, 0) + 1
+				features[date1 + cat + trend] = 1
 				#print features['TEXT']
 
 	# newFeats = [("%s: %d" % (key, features[key])) for key in features if "TRENDS_" in key]
@@ -116,10 +140,11 @@ class Baseline():
 		self.mod.fit(dataset['X'], Y)
 		self.vectorizer = dataset['vectorizer']
 
-	def predict(self, X):
+	def predict(self, X, threshold):
 		dataset = build_dataset(X, baseline_phi, vectorizer=self.vectorizer)
-		results = self.mod.predict_proba(dataset['X'])
-		return [1 if (results[i][1] >= 0.3) else 0 for i in xrange(len(results))]
+		return self.mod.predict(dataset['X'])
+		#results = self.mod.predict_proba(dataset['X'])
+		#return [1 if (results[i][1] >= threshold) else 0 for i in xrange(len(results))]
 
 	print_weights = print_weights
 
@@ -138,10 +163,11 @@ class Novel():
 		self.mod.fit(dataset['X'], Y)
 		self.vectorizer = dataset['vectorizer']
 
-	def predict(self, X):
+	def predict(self, X, threshold):
 		dataset = build_dataset(X, novel_phi, vectorizer=self.vectorizer)
-		results = self.mod.predict_proba(dataset['X'])
-		return [1 if (results[i][1] >= 0.5) else 0 for i in xrange(len(results))]
+		return self.mod.predict(dataset['X'])
+		#results = self.mod.predict_proba(dataset['X'])
+		#return [1 if (results[i][1] >= threshold) else 0 for i in xrange(len(results))]
 
 	print_weights = print_weights
 

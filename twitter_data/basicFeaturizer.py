@@ -140,7 +140,7 @@ def main():
 		category = infile.split('CleanData')[0]
 		with open(category + "Featurized.csv", 'w') as outfile:
 			featurize(infile, outfile, category)
-			# print "finished" + infile + "!"
+			print "finished" + infile + "!"
 
 if __name__ == "__main__":
     main()
