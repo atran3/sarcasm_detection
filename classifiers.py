@@ -11,11 +11,12 @@ def read_trends():
 	trend2cat = {}
 	for line in f.readlines():
 		line = line[:-1]
-		date, category, trend = line.split('\t')
+		date, category, trend = line.decode('utf-8').split('\t')
 		if date not in trends:
 			trends[date] = []
  
- 		trends[date].append(trend)
+ 		if trend not in trends[date]:
+	 		trends[date].append(trend)
  		trend2cat[trend] = category
 
  	return trends, trend2cat
@@ -32,11 +33,21 @@ def baseline_phi(features):
 def novel_phi(features):
 	date1 = features['TEXT_TIME'].strftime("%Y%m")
 	hasDate = date1 in trends
-	for string in features['TEXT'].split(' '):
+		# if hasDate and string in trends[date1]:
+		# 	print string
+		# 	cat = 'TRENDS_' + trend2cat[string]
+		# 	features[cat] = features.get(cat, 0) + 1
+	if date1 in trends:
+		for trend in trends[date1]:
+			if " " + trend + " " in features['TEXT']:
+				#print trend
+				cat = 'TRENDS_' + trend2cat[trend]
+				features[cat] = features.get(cat, 0) + 1
+				#print features['TEXT']
 
-		if hasDate and string in trends:
-			cat = 'TRENDS_' + trend2cat[string]
-			features[cat] = features.get(cat, 0) + 1
+	# newFeats = [("%s: %d" % (key, features[key])) for key in features if "TRENDS_" in key]
+	# if len(newFeats) != 0:
+	# 	print newFeats
 
 	return features
 
@@ -54,11 +65,11 @@ def build_dataset(data, phi, vectorizer=None):
 	for basicFeatures in data:
 		raw_examples.append(basicFeatures['TEXT'])
 		features = copy.deepcopy(basicFeatures)
+		features = phi(features)
 		if features.get('TEXT', False): del features['TEXT']
 		if features.get('TEXT_TIME', False): del features['TEXT_TIME']
 		if features.get('REPLY_TEXT', False): del features['REPLY_TEXT']
 		if features.get('REPLY_TIME', False): del features['REPLY_TIME']
-		features = phi(features)
 		feat_dicts.append(features)
 	feat_matrix = None
 	# In training, we want a new vectorizer:    
@@ -84,6 +95,9 @@ def print_weights(self):
 	print "\t."
 	for k,v in fm[-10:]:
 		print "\t%s\t%f" % (k,v)
+
+	trendFeats = [("%s: %d" % (key, features[key])) for key in fm if "TRENDS_" in key]
+	print trendFeats
 
 
 # Logistic Regression on bag of words
